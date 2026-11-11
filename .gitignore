@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments & local build artifacts
+.venv/
+venv/
+ENV/
+env/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.coverage
+
+# PyInstaller
+*.manifest
+
+# Android / Gradle
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/*.iml
+*.apk
+*.aab
+*.ap_
+*.dex
+!dist-apk/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+*.log
+*.swp
