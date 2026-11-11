@@ -30,6 +30,7 @@ android/*.iml
 *.ap_
 *.dex
 !dist-apk/
+!dist-apk/*.apk
 
 # OS / Editor
 .DS_Store
