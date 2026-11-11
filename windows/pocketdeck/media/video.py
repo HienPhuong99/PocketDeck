@@ -25,7 +25,7 @@ def to_bgra(frame: av.VideoFrame, target: tuple[int, int] | None, scaler: VideoR
         th = max(16, round(tw * frame.height / frame.width))
     plane = scaler.reformat(frame, width=tw, height=th, format="bgra", interpolation="AREA").planes[0]
     rows = np.frombuffer(plane, np.uint8)[: th * plane.line_size].reshape(th, plane.line_size)
-    return rows[:, : tw * 4].reshape(th, tw, 4)
+    return rows[:, : tw * 4].reshape(th, tw, 4).copy()
 
 
 def save_frame_png(frame: av.VideoFrame, dest: Path) -> Path:

@@ -25,8 +25,25 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from pocketdeck.discovery import LanDiscovery  # noqa: E402
+from pocketdeck.protocol.file_transfer import DirListing, FsRoot, LocalFileSystem  # noqa: E402
 from pocketdeck.protocol.framing import AUDIO_CODEC_PCM16, VIDEO_KIND_DATA  # noqa: E402
 from pocketdeck.protocol.session import DeckLinkHostServer, DeckLinkSession, PeerInfo, SessionCallbacks  # noqa: E402
+
+
+class _FakeAndroidFs(LocalFileSystem):
+    def __init__(self, root: Path):
+        self.root = root
+
+    async def list_roots(self) -> list[FsRoot]:
+        return [
+            FsRoot("Bộ nhớ trong", str(self.root), "android"),
+            FsRoot("Download", str(self.root / "Download"), "folder"),
+            FsRoot("DCIM", str(self.root / "DCIM"), "folder"),
+            FsRoot("Documents", str(self.root / "Documents"), "folder"),
+        ]
+
+    async def list_dir(self, path: str) -> DirListing:
+        return await super().list_dir(path or str(self.root))
 
 
 class FakeAndroidDevice:
@@ -121,6 +138,7 @@ class FakeAndroidDevice:
         return SessionCallbacks(on_control=on_ctrl, on_chat=on_chat)
 
     def _on_session_started(self, session: DeckLinkSession) -> None:
+        session.files.local_fs = _FakeAndroidFs(self.storage_dir)
         self._stream_tasks.append(asyncio.create_task(self._stream_media_to(session)))
 
     async def start(self) -> int:
