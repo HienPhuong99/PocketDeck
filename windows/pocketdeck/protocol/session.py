@@ -196,7 +196,7 @@ class DeckLinkSession:
             self._read_task.cancel()
         try:
             self._writer.close()
-            await self._writer.wait_closed()
+            await asyncio.wait_for(self._writer.wait_closed(), timeout=0.5)
         except Exception:
             pass
         if self.callbacks.on_disconnected is not None:
@@ -340,13 +340,16 @@ class DeckLinkHostServer:
         return self.port
 
     async def stop(self) -> None:
-        if self._server is not None:
-            self._server.close()
-            await self._server.wait_closed()
-            self._server = None
         for sess in list(self.sessions):
             await sess.close("server_stopped")
         self.sessions.clear()
+        if self._server is not None:
+            self._server.close()
+            try:
+                await asyncio.wait_for(self._server.wait_closed(), timeout=1.0)
+            except Exception:
+                pass
+            self._server = None
 
     async def _handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         peername = writer.get_extra_info("peername") or ("0.0.0.0", 0)
