@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PocketDeck</string>
+    <string name="accessibility_service_label">PocketDeck Điều khiển từ xa</string>
+    <string name="accessibility_service_description">Cho phép thực hiện thao tác chạm, vuốt, phím điều hướng và nhập tiếng Việt khi bạn chia sẻ màn hình qua PocketDeck.</string>
+</resources>
