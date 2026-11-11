@@ -1,0 +1,76 @@
+name: PocketDeck CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  windows-test:
+    name: Windows Suite (Python 3.12 + PySide6 Offscreen)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: windows/requirements.txt
+
+      - name: Install Windows dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r windows/requirements.txt pytest
+
+      - name: Generate Windows application icon
+        run: python windows/tools/make_icon.py
+
+      - name: Run Windows unit, E2E & offscreen UI tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QPA_FONTDIR: C:\Windows\Fonts
+        run: pytest windows/tests -v
+
+  android-build-and-bridge-test:
+    name: Android APK Build, FairPlay JUnit & Live Python-Kotlin Bridge
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Temurin JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: "gradle"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Run Android JUnit tests (DeckLink + 21 FairPlay vectors) & build APK
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew testDebugUnitTest printDebugUnitTestClasspath assembleDebug --no-daemon
+
+      - name: Set up Python 3.12 for Cross-Platform Live Bridge Test
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run Live Python (Windows) <-> Kotlin (Android) Socket Bridge Test
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest cryptography
+          pytest windows/tests/test_cross_platform_bridge.py -v --strict-markers
+
+      - name: Upload PocketDeck-debug.apk artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PocketDeck-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk

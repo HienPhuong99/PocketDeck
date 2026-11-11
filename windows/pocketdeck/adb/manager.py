@@ -106,8 +106,15 @@ def find_bundled_apk() -> Path | None:
     candidates: list[Path] = []
     if getattr(sys, "frozen", False):
         meipass = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
-        candidates.append(meipass / "PocketDeck-android.apk")
-        candidates.append(Path(sys.executable).parent / "PocketDeck-android.apk")
+        exe_dir = Path(sys.executable).parent
+        candidates.extend(
+            [
+                meipass / "PocketDeck-android.apk",
+                meipass / "PocketDeck-debug.apk",
+                exe_dir / "PocketDeck-android.apk",
+                exe_dir / "PocketDeck-debug.apk",
+            ]
+        )
 
     repo_root = Path(__file__).resolve().parents[3]
     candidates.extend(

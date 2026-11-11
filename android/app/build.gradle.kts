@@ -83,3 +83,14 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
+
+tasks.register("printDebugUnitTestClasspath") {
+    dependsOn("compileDebugUnitTestKotlin", "bundleDebugClassesToRuntimeJar")
+    doLast {
+        val unitTestTask = tasks.named("testDebugUnitTest", org.gradle.api.tasks.testing.Test::class.java).get()
+        val cpFile = layout.buildDirectory.file("tmp/unit_test_classpath.txt").get().asFile
+        cpFile.parentFile.mkdirs()
+        cpFile.writeText(unitTestTask.classpath.files.joinToString(File.pathSeparator) { it.absolutePath })
+        println("CLASSPATH_FILE=" + cpFile.absolutePath)
+    }
+}
